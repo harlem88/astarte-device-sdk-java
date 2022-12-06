@@ -1,14 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-	compileSdkVersion 31
+	compileSdkVersion 33
 	buildToolsVersion "30.0.3"
 
 	defaultConfig {
 		minSdkVersion 23
-		targetSdkVersion 31
-		versionCode 1
-		versionName project.version
+		targetSdkVersion 33
 
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -70,9 +68,22 @@ dependencies {
 
 task javadoc(type: Javadoc) {
 	failOnError false
-	source = android.sourceSets.main.java.sourceFiles
+	group = "Documentation"
+	description = "Generate Javadoc"
+	source = android.sourceSets.main.java.srcDirs
 	classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-	classpath += configurations.compile
+	options.memberLevel = JavadocMemberLevel.PROTECTED
+	options.addStringOption('Xmaxwarns', '1')
+	options.addStringOption('Xmaxerrs', '1')
+	options.links "https://docs.oracle.com/javase/8/docs/api"
+	options.linksOffline "https://developer.android.com/reference",
+			"${android.sdkDirectory}/docs/reference"
+	android.libraryVariants.all { variant ->
+		if (variant.name == 'release') {
+			owner.classpath += variant.javaCompileProvider.get().classpath
+		}
+	}
+	exclude '**/R.html', '**/R.*.html', '**/index.html'
 }
 
 ext {
